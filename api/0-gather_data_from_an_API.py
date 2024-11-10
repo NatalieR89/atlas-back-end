@@ -32,14 +32,15 @@ def get_employee_todo_progress(employee_id):
     tasks_data = tasks_response.json()
 
     # Filter completed tasks
-    completed_tasks = [task['title'] 
+    completed_tasks = [task['title']
                        for task in tasks_data if task['completed']]
     total_tasks = len(tasks_data)
     completed_tasks_count = len(completed_tasks)
 
-    # Display the employee TODO list 
+    # Display the employee TODO list
     # progress in the required format
-    print(f'Employee {employee_name} is done with tasks({completed_tasks_count}/{total_tasks}):')
+    print
+    (f'Employee {employee_name} is done with tasks({completed_tasks_count}/{total_tasks}):')
     for task in completed_tasks:
         print(f'\t {task}')
 
