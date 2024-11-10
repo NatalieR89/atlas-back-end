@@ -1,59 +1,75 @@
 #!/usr/bin/python3
 '''Module'''
-
-import requests
-import sys
 import json
+import sys
+import urllib.error
+import urllib.request
+
 
 def get_employee_todo_progress(employee_id):
     # Base URL for the API
     base_url = 'https://jsonplaceholder.typicode.com'
 
-    # Fetch employee's details (name, etc.)
+    # Fetch employee's details (username, etc.)
     employee_url = f'{base_url}/users/{employee_id}'
-    employee_response = requests.get(employee_url)
 
-    # Check if the employee exists
-    if employee_response.status_code != 200:
-        print(f"Error: Employee with ID {employee_id} not found.")
+    try:
+        with urllib.request.urlopen(employee_url) as response:
+            employee_data = json.load(response)
+    except urllib.error.HTTPError as e:
+        print(f"Error: Unable to fetch employee data for ID {employee_id}. HTTP Error {e.code}.")
+        return
+    except urllib.error.URLError as e:
+        print(f"Error: Unable to fetch employee data. URL Error {e.reason}.")
         return
 
-    employee_data = employee_response.json()
-    employee_name = employee_data['name']
+    username = employee_data.get('username')
 
     # Fetch the employee's TODO tasks
     tasks_url = f'{base_url}/todos?userId={employee_id}'
-    tasks_response = requests.get(tasks_url)
 
-    if tasks_response.status_code != 200:
-        print("Error: Unable to fetch tasks data.")
+    try:
+        with urllib.request.urlopen(tasks_url) as response:
+            tasks_data = json.load(response)
+    except urllib.error.HTTPError as e:
+        print(f"Error: Unable to fetch tasks data for employee {username} (ID: {employee_id}). HTTP Error {e.code}.")
+        return
+    except urllib.error.URLError as e:
+        print(f"Error: Unable to fetch tasks data. URL Error {e.reason}.")
         return
 
-    tasks_data = tasks_response.json()
-
-    # Prepare data for JSON export
-    json_data = {str(employee_id): []}
-
-    # Add each task as a dictionary to the list for the employee
-    for task in tasks_data:
-        task_data = {
+    # Prepare data for JSON output in the specified format
+    json_data = {str(employee_id): [
+        {
             "task": task['title'],
             "completed": task['completed'],
-            "username": employee_name
-        }
-        json_data[str(employee_id)].append(task_data)
+            "username": username
+        } for task in tasks_data
+    ]}
 
-    # Write the data to a JSON file
+    # Write data to JSON file
     json_filename = f"{employee_id}.json"
-    with open(json_filename, 'w', encoding='utf-8') as jsonfile:
-        json.dump(json_data, jsonfile, ensure_ascii=False, indent=4)
+    try:
+        with open(json_filename, 'w', encoding='utf-8') as jsonfile:
+            json.dump(json_data, jsonfile, indent=4)
+        print(f"Data successfully written to {json_filename}")
+    except IOError as e:
+        print(f"Error: Unable to write to file {json_filename}. I/O Error: {e}")
 
-    print(f"Data has been exported to {json_filename}")
+    # Display the employee TODO list progress in the required format
+    completed_tasks = [task['title'] for task in tasks_data if task['completed']]
+    total_tasks = len(tasks_data)
+    completed_tasks_count = len(completed_tasks)
+
+    print(f"Employee {username} is done with tasks({completed_tasks_count}/{total_tasks}):")
+    for task in completed_tasks:
+        print(f"\t {task}")
+
 
 if __name__ == '__main__':
     # Ensure that the script has been called with an employee ID
     if len(sys.argv) != 2:
-        print("Usage: python3 0-gather_data_from_an_API.py <employee_id>")
+        print("Usage: python3 script.py <employee_id>")
         sys.exit(1)
 
     try:
