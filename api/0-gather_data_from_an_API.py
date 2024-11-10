@@ -44,6 +44,7 @@ def get_employee_todo_progress(employee_id):
     for task in completed_tasks:
         print(f'\t {task}')
 
+
 if __name__ == '__main__':
     # Ensure that the script has been called with an employee ID
     if len(sys.argv) != 2:
