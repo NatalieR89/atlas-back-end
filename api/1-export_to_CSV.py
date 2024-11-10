@@ -1,9 +1,11 @@
 #!/usr/bin/python3
 '''Module'''
-
-import requests
-import sys
 import csv
+import json
+import sys
+import urllib.error
+import urllib.request
+
 
 def get_employee_todo_progress(employee_id):
     # Base URL for the API
@@ -11,52 +13,57 @@ def get_employee_todo_progress(employee_id):
 
     # Fetch employee's details (name, etc.)
     employee_url = f'{base_url}/users/{employee_id}'
-    employee_response = requests.get(employee_url)
 
-    # Check if the employee exists
-    if employee_response.status_code != 200:
-        print(f"Error: Employee with ID {employee_id} not found.")
+    try:
+        with urllib.request.urlopen(employee_url) as response:
+            employee_data = json.load(response)
+    except urllib.error.HTTPError as e:
+        print(f"Error: Unable to fetch employee data for ID {employee_id}. HTTP Error {e.code}.")
+        return
+    except urllib.error.URLError as e:
+        print(f"Error: Unable to fetch employee data. URL Error {e.reason}.")
         return
 
-    employee_data = employee_response.json()
-    employee_name = employee_data['name']
+    employee_name = employee_data.get('username')
 
     # Fetch the employee's TODO tasks
     tasks_url = f'{base_url}/todos?userId={employee_id}'
-    tasks_response = requests.get(tasks_url)
 
-    if tasks_response.status_code != 200:
-        print("Error: Unable to fetch tasks data.")
+    try:
+        with urllib.request.urlopen(tasks_url) as response:
+            tasks_data = json.load(response)
+    except urllib.error.HTTPError as e:
+        print(f"Error: Unable to fetch tasks data for employee {employee_name} (ID: {employee_id}). HTTP Error {e.code}.")
+        return
+    except urllib.error.URLError as e:
+        print(f"Error: Unable to fetch tasks data. URL Error {e.reason}.")
         return
 
-    tasks_data = tasks_response.json()
-
-    # Prepare data for CSV export
+    # Prepare data for CSV output
     csv_filename = f"{employee_id}.csv"
+    try:
+        with open(csv_filename, mode='w', newline='', encoding='utf-8') as csvfile:
+            csvwriter = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
+            for task in tasks_data:
+                csvwriter.writerow([employee_id, employee_name, task['completed'], task['title']])
+        print(f"Data successfully written to {csv_filename}")
+    except IOError as e:
+        print(f"Error: Unable to write to file {csv_filename}. I/O Error: {e}")
 
-    # Open the CSV file for writing
-    with open(csv_filename, mode='w', newline='', encoding='utf-8') as csvfile:
-        fieldnames = ['USER_ID', 'USERNAME', 'TASK_COMPLETED_STATUS', 'TASK_TITLE']
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+    # Display the employee TODO list progress in the required format
+    completed_tasks = [task['title'] for task in tasks_data if task['completed']]
+    total_tasks = len(tasks_data)
+    completed_tasks_count = len(completed_tasks)
 
-        # Write the header
-        writer.writeheader()
+    print(f"Employee {employee_name} is done with tasks({completed_tasks_count}/{total_tasks}):")
+    for task in completed_tasks:
+        print(f"\t {task}")
 
-        # Write each task's details as a row in the CSV
-        for task in tasks_data:
-            writer.writerow({
-                'USER_ID': employee_id,
-                'USERNAME': employee_name,
-                'TASK_COMPLETED_STATUS': task['completed'],
-                'TASK_TITLE': task['title']
-            })
-
-    print(f"Data has been exported to {csv_filename}")
 
 if __name__ == '__main__':
     # Ensure that the script has been called with an employee ID
     if len(sys.argv) != 2:
-        print("Usage: python3 0-gather_data_from_an_API.py <employee_id>")
+        print("Usage: python3 script.py <employee_id>")
         sys.exit(1)
 
     try:
