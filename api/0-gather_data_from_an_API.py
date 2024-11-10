@@ -45,7 +45,6 @@ def get_employee_todo_progress(employee_id):
         print(f'\t {task}')
 
 if __name__ == '__main__':
-
     # Ensure that the script has been called with an employee ID
     if len(sys.argv) != 2:
         print("Usage: python3 0-gather_data_from_an_API.py <employee_id>")
