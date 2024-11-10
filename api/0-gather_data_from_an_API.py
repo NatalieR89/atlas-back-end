@@ -40,14 +40,13 @@ def get_employee_todo_progress(employee_id):
     # Display the employee TODO list
     # progress in the required format
     print
-    (f'Employee {employee_name} is done with tasks
-     ({completed_tasks_count}/{total_tasks}):')
+    (f'Employee {employee_name} is done with tasks({completed_tasks_count}/{total_tasks}):')
     for task in completed_tasks:
         print(f'\t {task}')
 
 if __name__ == '__main__':
 
-    
+
     # Ensure that the script has been called with an employee ID
     if len(sys.argv) != 2:
         print("Usage: python3 0-gather_data_from_an_API.py <employee_id>")
