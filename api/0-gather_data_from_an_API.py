@@ -18,7 +18,8 @@ def get_employee_todo_progress(employee_id):
         with urllib.request.urlopen(employee_url) as response:
             employee_data = json.load(response)
     except urllib.error.HTTPError as e:
-        print(f"Error: Unable to fetch employee data for ID {employee_id}. HTTP Error {e.code}.")
+        print(f"Error: Unable to fetch employee data for ID 
+              {employee_id}. HTTP Error {e.code}.")
         return
     except urllib.error.URLError as e:
         print(f"Error: Unable to fetch employee data. URL Error {e.reason}.")
@@ -33,14 +34,16 @@ def get_employee_todo_progress(employee_id):
         with urllib.request.urlopen(tasks_url) as response:
             tasks_data = json.load(response)
     except urllib.error.HTTPError as e:
-        print(f"Error: Unable to fetch tasks data for employee {employee_name} (ID: {employee_id}). HTTP Error {e.code}.")
+        print(f"Error: Unable to fetch tasks data for employee 
+              {employee_name} (ID: {employee_id}). HTTP Error {e.code}.")
         return
     except urllib.error.URLError as e:
         print(f"Error: Unable to fetch tasks data. URL Error {e.reason}.")
         return
 
     # Filter completed tasks
-    completed_tasks = [task['title'] for task in tasks_data if task['completed']]
+    completed_tasks = [task['title'] 
+                       for task in tasks_data if task['completed']]
     total_tasks = len(tasks_data)
     completed_tasks_count = len(completed_tasks)
 
