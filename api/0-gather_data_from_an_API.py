@@ -1,41 +1,60 @@
 #!/usr/bin/python3
 
 
+'''module'''
+
+
 import requests
 import sys
 
-'''
-Module
-'''
-def get_employee_todo_list(employee_id):
-    try:
-        # Retrieve employee information
-        user_url = f"https://jsonplaceholder.typicode.com/users/{employee_id}"
-        user_response = requests.get(user_url)
-        user_data = user_response.json()
-        employee_name = user_data.get('name')
+def get_employee_todo_progress(employee_id):
+    # Define the base URL of the API (assuming it's hosted on some server)
+    base_url = f'https://jsonplaceholder.typicode.com'
 
-        # Retrieve employee TODO list
-        todo_url = f"https://jsonplaceholder.typicode.com/users/{employee_id}/todos"
-        todo_response = requests.get(todo_url)
-        todo_list = todo_response.json()
+    # Fetch employee's details (for the name)
+    employee_url = f'{base_url}/users/{employee_id}'
+    employee_response = requests.get(employee_url)
 
-        # Calculate the number of completed tasks and total tasks
-        total_tasks = len(todo_list)
-        done_tasks = [task for task in todo_list if task.get('completed')]
-        number_of_done_tasks = len(done_tasks)
+    # Check if the employee exists
+    if employee_response.status_code != 200:
+        print(f"Error: Employee with ID {employee_id} not found.")
+        return
 
-        # Print employee TODO list progress
-        print(f"Employee {employee_name} is done with tasks({number_of_done_tasks}/{total_tasks}):")
-        for task in done_tasks:
-            print(f"\t {task.get('title')}")
+    employee_data = employee_response.json()
+    employee_name = employee_data['name']
 
-    except Exception as e:
-        print(f"An error occurred: {e}")
+    # Fetch the tasks for the employee
+    tasks_url = f'{base_url}/todos?userId={employee_id}'
+    tasks_response = requests.get(tasks_url)
 
-if __name__ == "__main__":
+    if tasks_response.status_code != 200:
+        print("Error: Unable to fetch tasks data.")
+        return
+
+    tasks_data = tasks_response.json()
+
+    # Filter completed tasks
+    completed_tasks = [task['title'] for task in tasks_data if task['completed']]
+    total_tasks = len(tasks_data)
+    completed_tasks_count = len(completed_tasks)
+
+    # Display output in the requested format
+    print(f'Employee {employee_name} is done with tasks({completed_tasks_count}/{total_tasks}):')
+    for task in completed_tasks:
+        print(f'\t {task}')
+
+if __name__ == '__main__':
+    # Check if the script was run with an employee ID as argument
     if len(sys.argv) != 2:
         print("Usage: python script.py <employee_id>")
-    else:
+        sys.exit(1)
+
+    try:
+        # Parse the employee ID from the command line argument
         employee_id = int(sys.argv[1])
-        get_employee_todo_list(employee_id)
+    except ValueError:
+        print("Error: Employee ID should be an integer.")
+        sys.exit(1)
+
+    # Call the function to get the employee TODO progress
+    get_employee_todo_progress(employee_id)
