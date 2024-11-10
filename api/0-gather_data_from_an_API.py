@@ -6,13 +6,14 @@ import urllib.error
 import sys
 import json
 
+
 def get_employee_todo_progress(employee_id):
     # Base URL for the API
     base_url = 'https://jsonplaceholder.typicode.com'
 
     # Fetch employee's details (name, etc.)
     employee_url = f'{base_url}/users/{employee_id}'
-    
+
     try:
         with urllib.request.urlopen(employee_url) as response:
             employee_data = json.load(response)
@@ -27,7 +28,7 @@ def get_employee_todo_progress(employee_id):
 
     # Fetch the employee's TODO tasks
     tasks_url = f'{base_url}/todos?userId={employee_id}'
-    
+
     try:
         with urllib.request.urlopen(tasks_url) as response:
             tasks_data = json.load(response)
