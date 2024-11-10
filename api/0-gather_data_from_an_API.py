@@ -1,10 +1,9 @@
 #!/usr/bin/python3
 '''Module'''
-
-import urllib.request
-import urllib.error
-import sys
 import json
+import sys
+import urllib.error
+import urllib.request
 
 
 def get_employee_todo_progress(employee_id):
