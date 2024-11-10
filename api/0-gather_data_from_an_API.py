@@ -34,8 +34,7 @@ def get_employee_todo_progress(employee_id):
         with urllib.request.urlopen(tasks_url) as response:
             tasks_data = json.load(response)
     except urllib.error.HTTPError as e:
-        print(f"Error: Unable to fetch tasks data for employee 
-              {employee_name} (ID: {employee_id}). HTTP Error {e.code}.")
+        print(f"Error: Unable to fetch tasks data for employee {employee_name} (ID: {employee_id}). HTTP Error {e.code}.")
         return
     except urllib.error.URLError as e:
         print(f"Error: Unable to fetch tasks data. URL Error {e.reason}.")
