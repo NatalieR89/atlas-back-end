@@ -1,58 +1,62 @@
+#!/usr/bin/python3
+'''Module'''
+
 import requests
 import sys
 
-def fetch_employee_todo_data(employee_id):
-    # Define the base URL for the API
-    url = f"https://jsonplaceholder.typicode.com/users/{employee_id}/todos"
-    
-    # Make a GET request to fetch the TODO data for the given employee ID
-    response = requests.get(url)
-    
-    # If the request is successful (status code 200), return the JSON data
-    if response.status_code == 200:
-        return response.json()
-    else:
-        # Handle failure, for example, employee not found
-        print(f"Error: Could not retrieve data for employee ID {employee_id}")
-        sys.exit(1)
 
-def display_employee_progress(employee_id):
-    # Fetch the TODO data for the employee
-    todos = fetch_employee_todo_data(employee_id)
-    
-    # Extract the employee's name from the user API endpoint
-    user_url = f"https://jsonplaceholder.typicode.com/users/{employee_id}"
-    user_response = requests.get(user_url)
-    if user_response.status_code == 200:
-        employee_name = user_response.json().get("name")
-    else:
-        print(f"Error: Could not retrieve employee data for ID {employee_id}")
-        sys.exit(1)
+def get_employee_todo_progress(employee_id):
+    # Base URL for the API
+    base_url = 'https://jsonplaceholder.typicode.com'
+
+    # Fetch employee's details (name, etc.)
+    employee_url = f'{base_url}/users/{employee_id}'
+    employee_response = requests.get(employee_url)
+
+    # Check if the employee exists
+    if employee_response.status_code != 200:
+        print(f"Error: Employee with ID {employee_id} not found.")
+        return
+
+    employee_data = employee_response.json()
+    employee_name = employee_data['name']
+
+    # Fetch the employee's TODO tasks
+    tasks_url = f'{base_url}/todos?userId={employee_id}'
+    tasks_response = requests.get(tasks_url)
+
+    if tasks_response.status_code != 200:
+        print("Error: Unable to fetch tasks data.")
+        return
+
+    tasks_data = tasks_response.json()
 
     # Filter completed tasks
-    completed_tasks = [task['title'] for task in todos if task['completed']]
-    total_tasks = len(todos)
-    completed_count = len(completed_tasks)
-    
-    # Output the progress in the requested format
-    print(f"Employee {employee_name} is done with tasks({completed_count}/{total_tasks}):")
-    
-    # Output each completed task title with proper formatting
+    completed_tasks = [task['title']
+                       for task in tasks_data if task['completed']]
+    total_tasks = len(tasks_data)
+    completed_tasks_count = len(completed_tasks)
+
+    # Display the employee TODO list
+    # progress in the required format
+    print
+    (f'Employee {employee_name} is done with tasks('
+     f'{completed_tasks_count}/{total_tasks}):')
     for task in completed_tasks:
-        print(f"\t {task}")
+        print(f'\t {task}')
 
-if __name__ == "__main__":
-    # Ensure that an employee ID is provided as a command line argument
+
+if __name__ == '__main__':
+    # Ensure that the script has been called with an employee ID
     if len(sys.argv) != 2:
-        print("Usage: python3 script.py <employee_id>")
+        print("Usage: python3 0-gather_data_from_an_API.py <employee_id>")
         sys.exit(1)
 
-    # Get the employee ID from the command line argument
     try:
-        employee_id = int(sys.argv[1])
+        employee_id = int(sys.argv[1])  # Parse the employee ID
     except ValueError:
-        print("Error: Employee ID must be an integer.")
+        print("Error: Employee ID should be an integer.")
         sys.exit(1)
 
-    # Display the employee's TODO list progress
-    display_employee_progress(employee_id)
+    # Call the function to fetch and display employee TODO progress
+    get_employee_todo_progress(employee_id)
