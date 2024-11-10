@@ -32,8 +32,8 @@ def get_employee_todo_progress(employee_id):
     tasks_data = tasks_response.json()
 
     # Filter completed tasks
-    completed_tasks = 
-    [task['title'] for task in tasks_data if task['completed']]
+    completed_tasks = [task['title'] 
+                       for task in tasks_data if task['completed']]
     total_tasks = len(tasks_data)
     completed_tasks_count = len(completed_tasks)
 
